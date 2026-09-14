@@ -1,0 +1,25 @@
+{
+  "name": "@togetherlens/photo-prompt-card",
+  "version": "0.1.0",
+  "description": "Create a local, copyable group-photo prompt card with an optional TogetherLens handoff.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "group-photo",
+    "photo-prompt",
+    "family-photo",
+    "remote-team",
+    "togetherlens"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
