@@ -24,7 +24,13 @@ The library generates a planning card, not an image. To create a new AI portrait
 npm install https://togetherlens.app/resources/downloads/togetherlens-photo-prompt-card-0.1.0.tgz
 ```
 
-This archive is hosted by TogetherLens. The package is not published on the npm registry.
+This archive is hosted by TogetherLens. If that download is unavailable, use the identical [GitHub release asset](https://github.com/m0k13/togetherlens-photo-prompt-card/releases/tag/v0.1.0):
+
+```bash
+npm install https://github.com/m0k13/togetherlens-photo-prompt-card/releases/download/v0.1.0/togetherlens-photo-prompt-card-0.1.0-release.tgz
+```
+
+The package is not published on the npm registry.
 
 ## Use
 
