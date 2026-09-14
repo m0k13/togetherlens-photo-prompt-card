@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Make a shared-photo invitation | TogetherLens</title>
+<meta name="description" content="Create a free invitation card for a family, couple or small team photo. Copy it as text or Markdown. No photo upload.">
+<style>
+:root{color-scheme:light;--ink:#172b47;--blue:#285cbd;--paper:#fff;--sky:#e9f1ff;--muted:#51617a;--edge:#c8d7ee}*{box-sizing:border-box}body{margin:0;background:var(--sky);color:var(--ink);font:17px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1060px;margin:auto;padding:40px 24px}a{color:var(--blue)}header{display:flex;justify-content:space-between;gap:20px;font-size:14px;margin-bottom:48px}h1{font:600 clamp(36px,6vw,64px)/1.06 Georgia,serif;max-width:680px;letter-spacing:-1.8px;margin:12px 0 20px}h2{font:600 30px/1.2 Georgia,serif;margin:0 0 20px}.intro{max-width:640px;color:var(--muted)}.workspace{display:grid;grid-template-columns:1fr 1.3fr;gap:32px;margin-top:36px;align-items:start}fieldset{border:0;padding:0;margin:0 0 24px}legend,label{display:block;font-weight:600;margin-bottom:10px}.choices{display:flex;gap:8px;flex-wrap:wrap}button{font:inherit;cursor:pointer;border:1px solid var(--edge);border-radius:9px;padding:10px 16px;background:white;color:var(--ink)}button[aria-pressed=true]{background:var(--ink);color:white;border-color:var(--ink)}textarea{display:block;width:100%;min-height:240px;resize:vertical;padding:14px;border:1px solid var(--edge);border-radius:9px;font:14px/1.6 ui-monospace,monospace;background:#fff;color:var(--ink)}.card{background:var(--paper);padding:36px;border-radius:3px 28px 28px 3px;border-left:8px solid var(--blue);box-shadow:0 16px 50px #244b8212}.card .stamp{font:12px/1.4 ui-monospace,monospace;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:32px}.card p{margin-bottom:24px}.card small,.note{color:var(--muted);font-size:14px}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.primary{background:var(--blue);color:white;border-color:var(--blue)}#status{min-height:26px;font-size:14px}.app{border-top:1px solid var(--edge);margin-top:40px;padding-top:24px;max-width:720px}.app a{font-weight:650}footer{margin-top:44px;font-size:13px;color:var(--muted)}:focus-visible{outline:3px solid #cf7a24;outline-offset:4px}@media(max-width:680px){main{padding:24px 18px}header{margin-bottom:30px}.workspace{display:flex;flex-direction:column;gap:24px}.card{order:-1;width:100%;padding:26px}.editor{width:100%}h1{letter-spacing:-1px}}
+</style>
+</head>
+<body><main>
+<header><span>TogetherLens / Photo prompt card</span><a href="https://github.com/m0k13/togetherlens-photo-prompt-card">Source &amp; package</a></header>
+<h1>A shared photo starts with an invitation.</h1>
+<p class="intro">Make a card for your family, partner or small team. Copy it into your own chat or project page, then agree on a scene before anyone shares a portrait.</p>
+<div class="workspace">
+<section class="editor" aria-label="Card settings">
+<fieldset><legend>Who is the photo for?</legend><div class="choices" id="contexts"><button type="button" data-context="family" aria-pressed="true">Family</button><button type="button" data-context="couple" aria-pressed="false">Couple</button><button type="button" data-context="team" aria-pressed="false">Small team</button></div></fieldset>
+<fieldset><legend>Copy format</legend><div class="choices" id="formats"><button type="button" data-format="text" aria-pressed="true">Plain text</button><button type="button" data-format="markdown" aria-pressed="false">Markdown</button></div></fieldset>
+<label for="output">Your invitation</label><textarea id="output" readonly spellcheck="false"></textarea>
+<div class="actions"><button class="primary" id="copy" type="button">Copy invitation</button><button id="download" type="button">Download text</button></div>
+<p id="status" role="status" aria-live="polite"></p>
+<p class="note">No photos, names or email addresses needed. Nothing is sent automatically.</p>
+</section>
+<article class="card" aria-label="Invitation preview"><div class="stamp">An invitation to make something together</div><h2 id="title">A photo everyone can join</h2><p id="body">Choose one shared scene first. Then invite the people whose portraits belong in it, even when everyone is in a different place.</p><p><a id="scene" href="https://togetherlens.app/duel/?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=prompt_card_demo_20260914">Choose a scene together</a></p><small>Scene planning is free. App photo generation uses paid tokens.</small></article>
+</div>
+<section class="app"><h2>Ready to make the photo?</h2><p>TogetherLens creates an AI portrait from separate photos of two to five people. Use portraits with permission and review the result before sharing it as AI-generated.</p><p><a href="https://togetherlens.app/create/combine-separate-photos/?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=prompt_card_demo_20260914">See how it works and get the app →</a></p><p class="note">The app is free to install. Photo generation uses paid tokens. Check purchase options and prices in the app. This card plans a scene; it does not generate a photo or import a prompt into the app.</p></section>
+<footer>Free, MIT-licensed demo. <a href="https://togetherlens.app/privacy/">TogetherLens privacy</a> · Hosted by GitHub Pages.</footer>
+<noscript><p>Enable JavaScript to switch and copy cards. The scene and app links above work without it.</p></noscript>
+</main>
+<script type="module">
+import {contexts} from './index.js';
+let context='family',format='text';
+const $=id=>document.getElementById(id);
+const link=$('scene').href;
+function render(){const c=contexts[context];$('title').textContent=c.title;$('body').textContent=c.body;$('scene').textContent=c.cta;
+const note='Scene planning is free. App photo generation uses paid tokens. Use portraits only with permission.';
+$('output').value=format==='markdown'?`> **${c.title}**\n>\n> ${c.body}\n>\n> [${c.cta}](${link})\n>\n> ${note}`:`${c.title}\n\n${c.body}\n\n${c.cta}: ${link}\n\n${note}`;
+document.querySelectorAll('[data-context]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.context===context)));
+document.querySelectorAll('[data-format]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.format===format)));$('status').textContent='';}
+$('contexts').addEventListener('click',e=>{if(e.target.dataset.context){context=e.target.dataset.context;render();}});
+$('formats').addEventListener('click',e=>{if(e.target.dataset.format){format=e.target.dataset.format;render();}});
+$('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('output').value);$('status').textContent='Invitation copied. Paste it into your own chat or page.';}catch{$('output').focus();$('output').select();$('status').textContent='Copy is unavailable here. Select and copy the invitation above.';}});
+$('download').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([$('output').value],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`togetherlens-${context}-invitation.${format==='markdown'?'md':'txt'}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('status').textContent='Invitation download requested.';});render();
+</script></body></html>

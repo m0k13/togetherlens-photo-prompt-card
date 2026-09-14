@@ -2,6 +2,10 @@
 
 Create a group-photo planning card for a README, community page, or team handbook. The package returns Markdown, HTML and plain text. It does not read files, call a network, require an account, or upload a photo.
 
+## Try it without installing
+
+[Open the browser demo](https://m0k13.github.io/togetherlens-photo-prompt-card/), choose family, couple or small team, and copy a card as plain text or Markdown. No photo upload or account is needed. Nothing is sent automatically.
+
 ## Example card
 
 > **A photo everyone can join**
