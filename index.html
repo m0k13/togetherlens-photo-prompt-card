@@ -31,6 +31,9 @@
 import {contexts} from './index.js';
 let context='family',format='text';
 const $=id=>document.getElementById(id);
+const inbound=new URLSearchParams(location.search);
+const fromPlaylist=inbound.size===3 && inbound.getAll('utm_source').length===1 && inbound.get('utm_source')==='youtube' && inbound.getAll('utm_medium').length===1 && inbound.get('utm_medium')==='organic' && inbound.getAll('utm_campaign').length===1 && inbound.get('utm_campaign')==='starter_playlist_demo_20260914';
+if(fromPlaylist){for(const anchor of [$('scene'),document.querySelector('.app a')]){const url=new URL(anchor.href);url.searchParams.set('utm_source','youtube');url.searchParams.set('utm_medium','organic');url.searchParams.set('utm_campaign','starter_playlist_demo_20260914');anchor.href=url.toString();}}
 const link=$('scene').href;
 function render(){const c=contexts[context];$('title').textContent=c.title;$('body').textContent=c.body;$('scene').textContent=c.cta;
 const note='Scene planning is free. App photo generation uses paid tokens. Use portraits only with permission.';
