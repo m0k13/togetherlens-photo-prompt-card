@@ -31,9 +31,13 @@
 <script type="module">
 import {contexts} from './index.js';
 let context='family',format='text';
+function readPreset(){
+context='family';format='text';
 const preset=new URLSearchParams(location.hash.slice(1));
 if(preset.getAll('context').length===1 && ['family','couple','team'].includes(preset.get('context'))) context=preset.get('context');
 if(preset.getAll('format').length===1 && ['text','markdown'].includes(preset.get('format'))) format=preset.get('format');
+}
+readPreset();
 const $=id=>document.getElementById(id);
 const inbound=new URLSearchParams(location.search);
 const fromPlaylist=inbound.size===3 && inbound.getAll('utm_source').length===1 && inbound.get('utm_source')==='youtube' && inbound.getAll('utm_medium').length===1 && inbound.get('utm_medium')==='organic' && inbound.getAll('utm_campaign').length===1 && ['starter_playlist_demo_20260914','card_link_post_20260915'].includes(inbound.get('utm_campaign'));
@@ -45,6 +49,7 @@ const note='Scene planning is free. App photo generation uses paid tokens. Use p
 $('output').value=format==='markdown'?`> **${c.title}**\n>\n> ${c.body}\n>\n> [${c.cta}](${link})\n>\n> [How to make the photo and get the app](${appGuide})\n>\n> ${note}`:`${c.title}\n\n${c.body}\n\n${c.cta}: ${link}\n\nHow to make the photo and get the app: ${appGuide}\n\n${note}`;
 document.querySelectorAll('[data-context]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.context===context)));
 document.querySelectorAll('[data-format]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.format===format)));$('status').textContent='';}
+window.addEventListener('hashchange',()=>{readPreset();render();});
 $('contexts').addEventListener('click',e=>{if(e.target.dataset.context){context=e.target.dataset.context;render();}});
 $('formats').addEventListener('click',e=>{if(e.target.dataset.format){format=e.target.dataset.format;render();}});
 $('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('output').value);$('status').textContent='Invitation copied. Paste it into your own chat or page.';}catch{$('output').focus();$('output').select();$('status').textContent='Copy is unavailable here. Select and copy the invitation above.';}});
