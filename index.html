@@ -36,8 +36,8 @@ if(preset.getAll('context').length===1 && ['family','couple','team'].includes(pr
 if(preset.getAll('format').length===1 && ['text','markdown'].includes(preset.get('format'))) format=preset.get('format');
 const $=id=>document.getElementById(id);
 const inbound=new URLSearchParams(location.search);
-const fromPlaylist=inbound.size===3 && inbound.getAll('utm_source').length===1 && inbound.get('utm_source')==='youtube' && inbound.getAll('utm_medium').length===1 && inbound.get('utm_medium')==='organic' && inbound.getAll('utm_campaign').length===1 && inbound.get('utm_campaign')==='starter_playlist_demo_20260914';
-if(fromPlaylist){for(const anchor of [$('scene'),document.querySelector('.app a')]){const url=new URL(anchor.href);url.searchParams.set('utm_source','youtube');url.searchParams.set('utm_medium','organic');url.searchParams.set('utm_campaign','starter_playlist_demo_20260914');anchor.href=url.toString();}}
+const fromPlaylist=inbound.size===3 && inbound.getAll('utm_source').length===1 && inbound.get('utm_source')==='youtube' && inbound.getAll('utm_medium').length===1 && inbound.get('utm_medium')==='organic' && inbound.getAll('utm_campaign').length===1 && ['starter_playlist_demo_20260914','card_link_post_20260915'].includes(inbound.get('utm_campaign'));
+if(fromPlaylist){for(const anchor of [$('scene'),document.querySelector('.app a')]){const url=new URL(anchor.href);url.searchParams.set('utm_source','youtube');url.searchParams.set('utm_medium','organic');url.searchParams.set('utm_campaign',inbound.get('utm_campaign'));anchor.href=url.toString();}}
 const link=$('scene').href;
 const appGuide=document.querySelector('.app a').href;
 function render(){$('share-result').hidden=true;const c=contexts[context];$('title').textContent=c.title;$('body').textContent=c.body;$('scene').textContent=c.cta;
