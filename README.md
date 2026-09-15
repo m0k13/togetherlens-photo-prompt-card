@@ -4,7 +4,7 @@ Create a group-photo planning card for a README, community page, or team handboo
 
 ## Try it without installing
 
-[Open the browser demo](https://m0k13.github.io/togetherlens-photo-prompt-card/), choose family, couple or small team, and copy a card as plain text or Markdown. No photo upload or account is needed. Nothing is sent automatically.
+[Open the browser demo](https://m0k13.github.io/togetherlens-photo-prompt-card/), choose family, couple or small team, and copy a card as plain text or Markdown. No photo upload or account is needed. Nothing is sent automatically. Use **Copy link to this card** to share the selected audience and format. Shared links contain only these preset choices and, for the known YouTube entry, its existing campaign parameters.
 
 ## Example card
 

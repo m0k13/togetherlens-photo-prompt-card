@@ -17,9 +17,10 @@
 <fieldset><legend>Who is the photo for?</legend><div class="choices" id="contexts"><button type="button" data-context="family" aria-pressed="true">Family</button><button type="button" data-context="couple" aria-pressed="false">Couple</button><button type="button" data-context="team" aria-pressed="false">Small team</button></div></fieldset>
 <fieldset><legend>Copy format</legend><div class="choices" id="formats"><button type="button" data-format="text" aria-pressed="true">Plain text</button><button type="button" data-format="markdown" aria-pressed="false">Markdown</button></div></fieldset>
 <label for="output">Your invitation</label><textarea id="output" readonly spellcheck="false"></textarea>
-<div class="actions"><button class="primary" id="copy" type="button">Copy invitation</button><button id="download" type="button">Download text</button></div>
+<div class="actions"><button class="primary" id="copy" type="button">Copy invitation</button><button id="download" type="button">Download text</button><button id="copy-link" type="button">Copy link to this card</button></div>
+<div id="share-result" hidden><label for="share-url">Link to this card</label><input id="share-url" readonly style="width:100%;padding:12px;font:inherit;border:1px solid var(--edge);border-radius:9px"></div>
 <p id="status" role="status" aria-live="polite"></p>
-<p class="note">No photos, names or email addresses needed. Nothing is sent automatically.</p>
+<p class="note">Share a link to reopen this card with the same audience and format. No photos, names or email addresses needed. Nothing is sent automatically.</p>
 </section>
 <article class="card" aria-label="Invitation preview"><div class="stamp">An invitation to make something together</div><h2 id="title">A photo everyone can join</h2><p id="body">Choose one shared scene first. Then invite the people whose portraits belong in it, even when everyone is in a different place.</p><p><a id="scene" href="https://togetherlens.app/duel/?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=prompt_card_demo_20260914">Choose a scene together</a></p><small>Scene planning is free. App photo generation uses paid tokens.</small></article>
 </div>
@@ -30,13 +31,16 @@
 <script type="module">
 import {contexts} from './index.js';
 let context='family',format='text';
+const preset=new URLSearchParams(location.hash.slice(1));
+if(preset.getAll('context').length===1 && ['family','couple','team'].includes(preset.get('context'))) context=preset.get('context');
+if(preset.getAll('format').length===1 && ['text','markdown'].includes(preset.get('format'))) format=preset.get('format');
 const $=id=>document.getElementById(id);
 const inbound=new URLSearchParams(location.search);
 const fromPlaylist=inbound.size===3 && inbound.getAll('utm_source').length===1 && inbound.get('utm_source')==='youtube' && inbound.getAll('utm_medium').length===1 && inbound.get('utm_medium')==='organic' && inbound.getAll('utm_campaign').length===1 && inbound.get('utm_campaign')==='starter_playlist_demo_20260914';
 if(fromPlaylist){for(const anchor of [$('scene'),document.querySelector('.app a')]){const url=new URL(anchor.href);url.searchParams.set('utm_source','youtube');url.searchParams.set('utm_medium','organic');url.searchParams.set('utm_campaign','starter_playlist_demo_20260914');anchor.href=url.toString();}}
 const link=$('scene').href;
 const appGuide=document.querySelector('.app a').href;
-function render(){const c=contexts[context];$('title').textContent=c.title;$('body').textContent=c.body;$('scene').textContent=c.cta;
+function render(){$('share-result').hidden=true;const c=contexts[context];$('title').textContent=c.title;$('body').textContent=c.body;$('scene').textContent=c.cta;
 const note='Scene planning is free. App photo generation uses paid tokens. Use portraits only with permission.';
 $('output').value=format==='markdown'?`> **${c.title}**\n>\n> ${c.body}\n>\n> [${c.cta}](${link})\n>\n> [How to make the photo and get the app](${appGuide})\n>\n> ${note}`:`${c.title}\n\n${c.body}\n\n${c.cta}: ${link}\n\nHow to make the photo and get the app: ${appGuide}\n\n${note}`;
 document.querySelectorAll('[data-context]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.context===context)));
@@ -44,5 +48,12 @@ document.querySelectorAll('[data-format]').forEach(b=>b.setAttribute('aria-press
 $('contexts').addEventListener('click',e=>{if(e.target.dataset.context){context=e.target.dataset.context;render();}});
 $('formats').addEventListener('click',e=>{if(e.target.dataset.format){format=e.target.dataset.format;render();}});
 $('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('output').value);$('status').textContent='Invitation copied. Paste it into your own chat or page.';}catch{$('output').focus();$('output').select();$('status').textContent='Copy is unavailable here. Select and copy the invitation above.';}});
+$('copy-link').addEventListener('click',async()=>{
+const shared=new URL(location.pathname,location.origin);
+if(fromPlaylist) shared.search=inbound.toString();
+shared.hash=new URLSearchParams({context,format}).toString();
+$('share-result').hidden=false;$('share-url').value=shared.href;
+try{await navigator.clipboard.writeText(shared.href);$('status').textContent='Card link copied. Your recipient will see the same audience and format.';}catch{$('share-url').focus();$('share-url').select();$('status').textContent='Select and copy the card link above.';}
+});
 $('download').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([$('output').value],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`togetherlens-${context}-invitation.${format==='markdown'?'md':'txt'}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('status').textContent='Invitation download requested.';});render();
 </script></body></html>
