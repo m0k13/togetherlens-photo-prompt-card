@@ -4,7 +4,11 @@ Create a group-photo planning card for a README, community page, or team handboo
 
 ## Try it without installing
 
-[Open the browser demo](https://m0k13.github.io/togetherlens-photo-prompt-card/), choose family, couple or small team, and copy a card as plain text or Markdown. No photo upload or account is needed. Nothing is sent automatically. Use **Copy link to this card** to share the selected audience and format. Shared links contain only these preset choices and, for the known YouTube entry, its existing campaign parameters.
+[Open the browser demo](https://m0k13.github.io/togetherlens-photo-prompt-card/), choose family, couple or small team, and copy a card as plain text or Markdown. No photo upload or account is needed. Nothing is sent automatically. Use **Copy link to this card** to share the selected audience and format. Shared links contain only these preset choices and, for an exact known YouTube or Reddit entry, its campaign parameters. Unknown, duplicate or extra query fields are not forwarded.
+
+The browser demo accepts one Reddit entry with exactly `utm_source=reddit`, `utm_medium=organic` and `utm_campaign=webapps_card_20261002`. It preserves that tuple on both first-party guide links and recipient card links. This is link-routing evidence, not proof of a visit, purchase or first-time subscriber. The library and existing package archives are unchanged.
+
+Run the browser-script contract tests with `node --test scripts/test-webapps-entry.mjs`.
 
 ## Example card
 
