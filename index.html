@@ -41,7 +41,9 @@ readPreset();
 const $=id=>document.getElementById(id);
 const inbound=new URLSearchParams(location.search);
 const fromPlaylist=inbound.size===3 && inbound.getAll('utm_source').length===1 && inbound.get('utm_source')==='youtube' && inbound.getAll('utm_medium').length===1 && inbound.get('utm_medium')==='organic' && inbound.getAll('utm_campaign').length===1 && ['starter_playlist_demo_20260914','card_link_post_20260915'].includes(inbound.get('utm_campaign'));
-if(fromPlaylist){for(const anchor of [$('scene'),document.querySelector('.app a')]){const url=new URL(anchor.href);url.searchParams.set('utm_source','youtube');url.searchParams.set('utm_medium','organic');url.searchParams.set('utm_campaign',inbound.get('utm_campaign'));anchor.href=url.toString();}}
+const fromWebApps=inbound.size===3 && inbound.getAll('utm_source').length===1 && inbound.get('utm_source')==='reddit' && inbound.getAll('utm_medium').length===1 && inbound.get('utm_medium')==='organic' && inbound.getAll('utm_campaign').length===1 && inbound.get('utm_campaign')==='webapps_card_20261002';
+const knownCampaign=fromPlaylist || fromWebApps;
+if(knownCampaign){for(const anchor of [$('scene'),document.querySelector('.app a')]){const url=new URL(anchor.href);url.searchParams.set('utm_source',inbound.get('utm_source'));url.searchParams.set('utm_medium','organic');url.searchParams.set('utm_campaign',inbound.get('utm_campaign'));anchor.href=url.toString();}}
 const link=$('scene').href;
 const appGuide=document.querySelector('.app a').href;
 function render(){$('share-result').hidden=true;const c=contexts[context];$('title').textContent=c.title;$('body').textContent=c.body;$('scene').textContent=c.cta;
@@ -55,7 +57,7 @@ $('formats').addEventListener('click',e=>{if(e.target.dataset.format){format=e.t
 $('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('output').value);$('status').textContent='Invitation copied. Paste it into your own chat or page.';}catch{$('output').focus();$('output').select();$('status').textContent='Copy is unavailable here. Select and copy the invitation above.';}});
 $('copy-link').addEventListener('click',async()=>{
 const shared=new URL(location.pathname,location.origin);
-if(fromPlaylist) shared.search=inbound.toString();
+if(knownCampaign) shared.search=inbound.toString();
 shared.hash=new URLSearchParams({context,format}).toString();
 $('share-result').hidden=false;$('share-url').value=shared.href;
 try{await navigator.clipboard.writeText(shared.href);$('status').textContent='Card link copied. Your recipient will see the same audience and format.';}catch{$('share-url').focus();$('share-url').select();$('status').textContent='Select and copy the card link above.';}
