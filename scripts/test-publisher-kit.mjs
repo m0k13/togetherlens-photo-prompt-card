@@ -37,6 +37,8 @@ test('setup names the real five files and does not imply free photo generation',
 	assert.match(source.start, /photo generation uses paid tokens and Premium is optional/);
 	assert.match(source.start, /not on a public page/);
 	assert.match(source.start, /Keep its copyright and permission notice/);
+	assert.ok(source.start.includes('https://github.com/m0k13/togetherlens-photo-prompt-card#before-anyone-shares-a-portrait'));
+	assert.doesNotMatch(source.start, /utm_source=|utm_campaign=/);
 });
 
 test('ZIP round-trip is exact and reproducible; duplicate output is refused', async () => {

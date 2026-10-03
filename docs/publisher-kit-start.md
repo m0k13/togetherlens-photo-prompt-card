@@ -21,4 +21,6 @@ The kit contains these five files:
 
 The kit collects no photos or contact details. It includes no script, embedded page, analytics, storage, or automatic sending. It creates no image and imports nothing into an app. The separate TogetherLens app is free to install; photo generation uses paid tokens and Premium is optional. Check current prices and terms before buying.
 
+If you want to create the portrait afterward, [read the app-workflow section in the repository README](https://github.com/m0k13/togetherlens-photo-prompt-card#before-anyone-shares-a-portrait). It explains the photo preparation and links to the iOS and Android workflow.
+
 The JavaScript library remains version 0.1.0. Its existing package archives are unchanged, and the library is not published on the npm registry. This ZIP is a separate website-integration kit. You can also [use the live example](https://m0k13.github.io/togetherlens-photo-prompt-card/examples/invitation-block.html) without downloading anything.
