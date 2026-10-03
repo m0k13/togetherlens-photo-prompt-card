@@ -1,14 +1,28 @@
-# @togetherlens/photo-prompt-card
+# Free photo invitation cards
 
-Create a group-photo planning card for a README, community page, or team handbook. The package returns Markdown, HTML and plain text. It does not read files, call a network, require an account, or upload a photo.
+Invite family, a partner or a small team to plan a shared photo before anyone sends portraits. The free browser tool creates invitation text, not images. No installation, account or photo upload is needed.
 
-## Try it without installing
+## Choose an invitation
 
-[Open the browser demo](https://m0k13.github.io/togetherlens-photo-prompt-card/), choose family, couple or small team, and copy a card as plain text or Markdown. No photo upload or account is needed. Nothing is sent automatically. Use **Copy link to this card** to share the selected audience and format. Shared links contain only these preset choices and, for an exact known YouTube or Reddit entry, its campaign parameters. Unknown, duplicate or extra query fields are not forwarded.
+Each link opens the existing card with the audience and copy format selected.
 
-The browser demo accepts one Reddit entry with exactly `utm_source=reddit`, `utm_medium=organic` and `utm_campaign=webapps_card_20261002`. It preserves that tuple on both first-party guide links and recipient card links. This is link-routing evidence, not proof of a visit, purchase or first-time subscriber. The library and existing package archives are unchanged.
+| Invitation | Use it for | Copy-ready card |
+| --- | --- | --- |
+| Family | Agree on a scene with relatives in different places. | [Plain text](https://m0k13.github.io/togetherlens-photo-prompt-card/#context=family&format=text) · [Markdown](https://m0k13.github.io/togetherlens-photo-prompt-card/#context=family&format=markdown) |
+| Couple | Pick a visual direction together before sharing portraits. | [Plain text](https://m0k13.github.io/togetherlens-photo-prompt-card/#context=couple&format=text) · [Markdown](https://m0k13.github.io/togetherlens-photo-prompt-card/#context=couple&format=markdown) |
+| Small team | Plan a portrait asynchronously instead of arranging a photo call. | [Plain text](https://m0k13.github.io/togetherlens-photo-prompt-card/#context=team&format=text) · [Markdown](https://m0k13.github.io/togetherlens-photo-prompt-card/#context=team&format=markdown) |
 
-Run the browser-script contract tests with `node --test scripts/test-webapps-entry.mjs`.
+Use plain text for a chat or email, or Markdown for a README or team handbook. Click **Copy invitation**, then paste and send it yourself. Nothing is sent automatically. Use **Copy link to this card** if the recipient should reopen the same audience and format. Card links contain preset choices, not names, photos or contact details.
+
+## Before anyone shares a portrait
+
+1. Agree on the scene and explain that the intended result is AI-generated, not a record of an event everyone attended.
+2. Ask each person whether they want to take part and which portrait they permit you to use. Do not send their photos through the card tool.
+3. For a TogetherLens group portrait, choose two to five people. Review the generated result with them before sharing it.
+
+The card plans an invitation. It does not generate a photo or import a prompt into an app. The separate TogetherLens app is free to install; photo generation uses paid tokens. Check purchase options and prices in the app.
+
+[See the photo workflow and get the iOS or Android app](https://togetherlens.app/create/combine-separate-photos/?utm_source=github&utm_medium=referral&utm_campaign=prompt_card_readme_20260914).
 
 ## Example card
 
@@ -22,7 +36,11 @@ Run the browser-script contract tests with `node --test scripts/test-webapps-ent
 
 The library generates a planning card, not an image. To create a new AI portrait from separate photos of two to five people, [see how TogetherLens works and get the iOS or Android app](https://togetherlens.app/create/combine-separate-photos/?utm_source=github&utm_medium=referral&utm_campaign=prompt_card_readme_20260914). Use portraits with permission and review the generated result before sharing.
 
-## Install
+## Use the JavaScript library
+
+`@togetherlens/photo-prompt-card` returns Markdown, HTML and plain text. The library does not read files, call a network, require an account or upload a photo. Its generated cards can also use your own title and body.
+
+### Install
 
 ```bash
 npm install https://togetherlens.app/resources/downloads/togetherlens-photo-prompt-card-0.1.0.tgz
@@ -36,7 +54,7 @@ npm install https://github.com/m0k13/togetherlens-photo-prompt-card/releases/dow
 
 The package is not published on the npm registry.
 
-## Use
+### Create a card
 
 ```js
 import { createPhotoPromptCard } from "@togetherlens/photo-prompt-card";
@@ -47,8 +65,16 @@ console.log(card.markdown);
 
 The returned `markdown`, `html`, and `text` fields are ready to paste. Opening the optional scene link does not upload a portrait.
 
-## Contexts
+### Contexts
 
 Use `family`, `couple`, or `team`. You can replace the title and body while keeping the card useful and short.
+
+## Browser routing and tests
+
+Shared links preserve the selected audience and format. For an exact known YouTube or Reddit entry, they also preserve its campaign parameters. Unknown, duplicate or extra query fields are not forwarded. Direct README preset links have no campaign query; their first-party guide links use the existing GitHub demo route.
+
+The browser demo accepts one Reddit entry with exactly `utm_source=reddit`, `utm_medium=organic` and `utm_campaign=webapps_card_20261002`. It preserves that tuple on both first-party guide links and recipient card links. This is link-routing evidence, not proof of a visit, purchase or first-time subscriber. The library and existing package archives are unchanged.
+
+Run the browser-script and README preset contract tests with `node --test scripts/test-webapps-entry.mjs`.
 
 TogetherLens is not affiliated with npm. This package is provided as a free, MIT-licensed starter.

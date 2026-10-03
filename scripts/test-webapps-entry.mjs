@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import { contexts } from '../index.js';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+const readme = await readFile(new URL('../README.md', import.meta.url), 'utf8');
 const script = html.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1]
   .replace("import {contexts} from './index.js';", '');
 assert.ok(script, 'Exercise the actual browser script, not a copied resolver.');
@@ -52,6 +53,34 @@ function mount(query = '', hash = '') {
     setTimeout() {},
   });
   return { elements, scene, app, contextButtons, formatButtons, clipboard, windowHandlers };
+}
+
+const readmePresetLinks = Array.from(readme.matchAll(/\]\((https:\/\/m0k13\.github\.io\/togetherlens-photo-prompt-card\/#[^)]+)\)/g), match => new URL(match[1]));
+
+test('README offers exactly the six supported audience and format presets', () => {
+  assert.equal(readmePresetLinks.length, 6);
+  assert.deepEqual(new Set(readmePresetLinks.map(url => url.hash)), new Set(
+    ['family', 'couple', 'team'].flatMap(context => ['text', 'markdown'].map(format => `#context=${context}&format=${format}`))
+  ));
+  for (const url of readmePresetLinks) assert.equal(url.search, '', 'Do not label README visits as another campaign.');
+});
+
+for (const url of readmePresetLinks) {
+  const preset = new URLSearchParams(url.hash.slice(1));
+  const context = preset.get('context');
+  const format = preset.get('format');
+  test(`README ${context}/${format} link restores the actual browser card`, async () => {
+    const page = mount(url.search, url.hash);
+    assert.equal(page.elements.get('title').textContent, contexts[context].title);
+    assert.equal(page.contextButtons.find(button => button.dataset.context === context).attributes['aria-pressed'], 'true');
+    assert.equal(page.formatButtons.find(button => button.dataset.format === format).attributes['aria-pressed'], 'true');
+    const output = page.elements.get('output').value;
+    assert.ok(output.startsWith(format === 'markdown' ? `> **${contexts[context].title}**` : contexts[context].title));
+    assert.ok(output.includes('App photo generation uses paid tokens. Use portraits only with permission.'));
+    assert.equal(page.app.href, `https://togetherlens.app/create/combine-separate-photos/${defaultQuery}`);
+    await page.elements.get('copy-link').handlers.click();
+    assert.equal(page.elements.get('share-url').value, url.href);
+  });
 }
 
 test('exact Reddit entry reaches both guides and generated text', async () => {
