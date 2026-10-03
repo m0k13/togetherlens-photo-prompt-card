@@ -42,6 +42,8 @@ Copy a native HTML invitation block into a family page or team handbook. Readers
 
 [Try the live HTML example](https://m0k13.github.io/togetherlens-photo-prompt-card/examples/invitation-block.html), then [copy the block from the integration guide](docs/add-invitation-block.md). Keep its permission and paid-generation notices. The public example is free and MIT-licensed; app photo generation is separate and paid.
 
+For files you can keep locally, [download the HTML publisher kit](https://github.com/m0k13/togetherlens-photo-prompt-card/releases/tag/invitation-kit-2026-10-03). It contains a standalone preview, a copy-ready snippet, the integration guide, setup instructions, and the MIT license. [Unzip and use the kit](docs/publisher-kit-start.md). This is a website block, not an npm package or image generator.
+
 ## Use the JavaScript library
 
 `@togetherlens/photo-prompt-card` returns Markdown, HTML and plain text. The library does not read files, call a network, require an account or upload a photo. Its generated cards can also use your own title and body.
@@ -82,5 +84,7 @@ Shared links preserve the selected audience and format. For an exact known YouTu
 The browser demo accepts one Reddit entry with exactly `utm_source=reddit`, `utm_medium=organic` and `utm_campaign=webapps_card_20261002`. It preserves that tuple on both first-party guide links and recipient card links. This is link-routing evidence, not proof of a visit, purchase or first-time subscriber. The library and existing package archives are unchanged.
 
 Run the browser-script, README preset, and static HTML block contract tests with `node --test scripts/test-webapps-entry.mjs scripts/test-invitation-block.mjs`.
+
+Run the publisher-kit archive checks with `node --test scripts/test-publisher-kit.mjs`. To build the kit from a tracked-clean checkout on a system with `zip`, run `node scripts/build-publisher-kit.mjs --output-dir /absolute/path/to/an/output-directory`. The builder uses five reviewed files, writes their timestamps consistently, and refuses to overwrite an existing kit. It creates the ZIP and `SHA256SUMS` outside the checkout.
 
 TogetherLens is not affiliated with npm. This package is provided as a free, MIT-licensed starter.
