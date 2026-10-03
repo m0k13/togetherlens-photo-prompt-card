@@ -36,6 +36,12 @@ The card plans an invitation. It does not generate a photo or import a prompt in
 
 The library generates a planning card, not an image. To create a new AI portrait from separate photos of two to five people, [see how TogetherLens works and get the iOS or Android app](https://togetherlens.app/create/combine-separate-photos/?utm_source=github&utm_medium=referral&utm_campaign=prompt_card_readme_20260914). Use portraits with permission and review the generated result before sharing.
 
+## Add an invitation to a web page without JavaScript
+
+Copy a native HTML invitation block into a family page or team handbook. Readers open the text and select it themselves. The block includes no embedded third-party page, photo input, analytics, or automatic sending.
+
+[Try the live HTML example](https://m0k13.github.io/togetherlens-photo-prompt-card/examples/invitation-block.html), then [copy the block from the integration guide](docs/add-invitation-block.md). Keep its permission and paid-generation notices. The public example is free and MIT-licensed; app photo generation is separate and paid.
+
 ## Use the JavaScript library
 
 `@togetherlens/photo-prompt-card` returns Markdown, HTML and plain text. The library does not read files, call a network, require an account or upload a photo. Its generated cards can also use your own title and body.
@@ -75,6 +81,6 @@ Shared links preserve the selected audience and format. For an exact known YouTu
 
 The browser demo accepts one Reddit entry with exactly `utm_source=reddit`, `utm_medium=organic` and `utm_campaign=webapps_card_20261002`. It preserves that tuple on both first-party guide links and recipient card links. This is link-routing evidence, not proof of a visit, purchase or first-time subscriber. The library and existing package archives are unchanged.
 
-Run the browser-script and README preset contract tests with `node --test scripts/test-webapps-entry.mjs`.
+Run the browser-script, README preset, and static HTML block contract tests with `node --test scripts/test-webapps-entry.mjs scripts/test-invitation-block.mjs`.
 
 TogetherLens is not affiliated with npm. This package is provided as a free, MIT-licensed starter.
