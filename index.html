@@ -51,9 +51,13 @@ const note='Scene planning is free. App photo generation uses paid tokens. Use p
 $('output').value=format==='markdown'?`> **${c.title}**\n>\n> ${c.body}\n>\n> [${c.cta}](${link})\n>\n> [How to make the photo and get the app](${appGuide})\n>\n> ${note}`:`${c.title}\n\n${c.body}\n\n${c.cta}: ${link}\n\nHow to make the photo and get the app: ${appGuide}\n\n${note}`;
 document.querySelectorAll('[data-context]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.context===context)));
 document.querySelectorAll('[data-format]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.format===format)));$('status').textContent='';}
+function syncPreset(){
+const hash=new URLSearchParams({context,format}).toString();
+try{history.replaceState(history.state,'',`${location.pathname}${location.search}#${hash}`);}catch{/* The explicit card-link control still works when history is unavailable. */}
+}
 window.addEventListener('hashchange',()=>{readPreset();render();});
-$('contexts').addEventListener('click',e=>{if(e.target.dataset.context){context=e.target.dataset.context;render();}});
-$('formats').addEventListener('click',e=>{if(e.target.dataset.format){format=e.target.dataset.format;render();}});
+$('contexts').addEventListener('click',e=>{if(['family','couple','team'].includes(e.target.dataset.context)){context=e.target.dataset.context;render();syncPreset();}});
+$('formats').addEventListener('click',e=>{if(['text','markdown'].includes(e.target.dataset.format)){format=e.target.dataset.format;render();syncPreset();}});
 $('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('output').value);$('status').textContent='Invitation copied. Paste it into your own chat or page.';}catch{$('output').focus();$('output').select();$('status').textContent='Copy is unavailable here. Select and copy the invitation above.';}});
 $('copy-link').addEventListener('click',async()=>{
 const shared=new URL(location.pathname,location.origin);
