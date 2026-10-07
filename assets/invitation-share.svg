@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">Free photo invitation text from TogetherLens</title>
+  <desc id="description">The invitation tool's family card beside its shared-photo headline. It creates text, not photos. App photo generation uses paid tokens.</desc>
+  <rect width="1200" height="630" fill="#e9f1ff"/>
+  <g fill="#172b47" font-family="Arial, sans-serif">
+    <text x="64" y="91" font-size="28" font-weight="700">TogetherLens</text>
+    <text x="64" y="127" font-size="19" fill="#51617a">Free photo invitation text</text>
+    <g font-family="Georgia, serif" font-size="62" font-weight="600" letter-spacing="-1.5">
+      <text x="64" y="233">A shared photo</text>
+      <text x="64" y="303">starts with an</text>
+      <text x="64" y="373">invitation.</text>
+    </g>
+    <text x="66" y="431" font-size="23">For family, couples and small teams</text>
+    <text x="66" y="468" font-size="20" fill="#51617a">Make the text. Send it yourself.</text>
+  </g>
+  <rect x="620" y="84" width="516" height="418" rx="25" fill="#fff"/>
+  <path d="M620 84h8v418h-8z" fill="#285cbd"/>
+  <g font-family="Arial, sans-serif" fill="#172b47">
+    <text x="660" y="135" font-size="13" letter-spacing="1.8" fill="#51617a">AN INVITATION TO MAKE SOMETHING TOGETHER</text>
+    <g font-family="Georgia, serif" font-size="34" font-weight="600">
+      <text x="660" y="192">A photo everyone</text>
+      <text x="660" y="232">can join</text>
+    </g>
+    <g font-size="21">
+      <text x="660" y="282">Choose one shared scene first.</text>
+      <text x="660" y="313">Then invite the people whose portraits</text>
+      <text x="660" y="344">belong in it, even when everyone is</text>
+      <text x="660" y="375">in a different place.</text>
+    </g>
+    <text x="660" y="423" font-size="22" fill="#285cbd">Choose a scene together</text>
+    <text x="660" y="470" font-size="16" fill="#51617a">Scene planning is free. App generation is paid.</text>
+  </g>
+  <path d="M64 539h1072" stroke="#c8d7ee" stroke-width="2"/>
+  <g font-family="Arial, sans-serif" font-size="20" fill="#172b47">
+    <text x="64" y="577">Creates text, not photos. No account or photo upload.</text>
+    <text x="64" y="608" font-size="18" fill="#51617a">Use portraits with permission. Photo generation in the separate app uses paid tokens.</text>
+  </g>
+</svg>
