@@ -14,8 +14,11 @@ const base = 'https://m0k13.github.io/togetherlens-photo-prompt-card/';
 const redditQuery = '?utm_source=reddit&utm_medium=organic&utm_campaign=webapps_card_20261002';
 const defaultQuery = '?utm_source=github&utm_medium=referral&utm_campaign=prompt_card_demo_20260914';
 
-function mount(query = '', hash = '') {
+function mount(query = '', hash = '', { rejectHistory = false } = {}) {
   const clipboard = [];
+  const location = new URL(base + query + hash);
+  const historyCalls = [];
+  const historyState = { previousPageState: 'preserved' };
   const elements = new Map();
   const makeNode = (id, dataset = {}) => {
     const node = {
@@ -37,7 +40,20 @@ function mount(query = '', hash = '') {
   const windowHandlers = {};
   vm.runInNewContext(script, {
     contexts, URL, URLSearchParams, Blob,
-    location: new URL(base + query + hash),
+    location,
+    history: {
+      state: historyState,
+      replaceState(state, title, address) {
+        if (rejectHistory) throw new Error('History replacement is unavailable');
+        assert.equal(state, historyState, 'Retain the browser history entry state.');
+        assert.equal(title, '');
+        const next = new URL(address, location);
+        assert.equal(next.origin, location.origin, 'Do not navigate to another origin.');
+        historyCalls.push(next.href);
+        location.href = next.href;
+      },
+      pushState() { assert.fail('Choices must not add Back entries.'); },
+    },
     window: { addEventListener(name, handler) { windowHandlers[name] = handler; } },
     document: {
       getElementById(id) { assert.ok(elements.has(id), `Unknown element ${id}`); return elements.get(id); },
@@ -52,8 +68,103 @@ function mount(query = '', hash = '') {
     navigator: { clipboard: { async writeText(value) { clipboard.push(value); } } },
     setTimeout() {},
   });
-  return { elements, scene, app, contextButtons, formatButtons, clipboard, windowHandlers };
+  return { elements, scene, app, contextButtons, formatButtons, clipboard, windowHandlers, location, historyCalls };
 }
+
+function choose(page, context, format) {
+  page.elements.get('contexts').handlers.click({ target: { dataset: { context } } });
+  page.elements.get('formats').handlers.click({ target: { dataset: { format } } });
+}
+
+for (const context of ['family', 'couple', 'team']) {
+  for (const format of ['text', 'markdown']) {
+    test(`selected ${context}/${format} survives address sharing and reload`, () => {
+      const page = mount('', '#context=couple&format=markdown');
+      choose(page, context, format);
+      assert.equal(page.location.href, base + `#context=${context}&format=${format}`);
+      assert.equal(page.historyCalls.length, 2);
+      const reloaded = mount(page.location.search, page.location.hash);
+      assert.equal(reloaded.elements.get('output').value, page.elements.get('output').value);
+      assert.equal(reloaded.contextButtons.find(button => button.dataset.context === context).attributes['aria-pressed'], 'true');
+      assert.equal(reloaded.formatButtons.find(button => button.dataset.format === format).attributes['aria-pressed'], 'true');
+    });
+  }
+}
+
+for (const query of [redditQuery, ...['starter_playlist_demo_20260914', 'card_link_post_20260915'].map(campaign => `?utm_source=youtube&utm_medium=organic&utm_campaign=${campaign}`)]) {
+  test(`choice synchronization preserves the existing exact campaign: ${query}`, async () => {
+    const page = mount(query, '#context=family&format=text');
+    const scene = page.scene.href;
+    const app = page.app.href;
+    choose(page, 'team', 'markdown');
+    assert.equal(page.location.search, query);
+    assert.equal(page.scene.href, scene);
+    assert.equal(page.app.href, app);
+    const reloaded = mount(page.location.search, page.location.hash);
+    assert.equal(reloaded.elements.get('output').value, page.elements.get('output').value);
+    await page.elements.get('copy-link').handlers.click();
+    assert.equal(page.elements.get('share-url').value, page.location.href);
+  });
+}
+
+test('initial load and external fragment changes do not rewrite browser history', () => {
+  const page = mount('', '#context=couple&format=markdown');
+  assert.deepEqual(page.historyCalls, []);
+  page.location.hash = 'context=team&format=text';
+  page.windowHandlers.hashchange();
+  assert.equal(page.elements.get('title').textContent, contexts.team.title);
+  assert.ok(page.elements.get('output').value.startsWith(contexts.team.title));
+  assert.deepEqual(page.historyCalls, []);
+});
+
+test('invalid or duplicate fragment fields retain the existing safe defaults', () => {
+  for (const hash of ['#context=private&format=html', '#context=couple&context=team&format=markdown&format=text']) {
+    const page = mount('', hash);
+    assert.equal(page.elements.get('title').textContent, contexts.family.title);
+    assert.ok(page.elements.get('output').value.startsWith(contexts.family.title));
+    choose(page, 'team', 'text');
+    assert.equal(page.location.hash, '#context=team&format=text');
+  }
+});
+
+test('synchronized fragments contain only finite public choices, not private extras', async () => {
+  const query = redditQuery + '&email=private@example.com';
+  const page = mount(query, '#context=family&format=text&token=private-token');
+  choose(page, 'couple', 'markdown');
+  assert.equal(page.location.search, query, 'Leave the address query untouched, without forwarding it.');
+  assert.equal(page.location.hash, '#context=couple&format=markdown');
+  assert.equal(page.app.href, `https://togetherlens.app/create/combine-separate-photos/${defaultQuery}`);
+  await page.elements.get('copy-link').handlers.click();
+  assert.equal(page.elements.get('share-url').value, base + '#context=couple&format=markdown');
+  assert.doesNotMatch(page.elements.get('output').value, /private@example|private-token/);
+});
+
+test('non-choice clicks and unsupported dataset values leave the card and URL unchanged', () => {
+  const page = mount('', '#context=couple&format=markdown');
+  const output = page.elements.get('output').value;
+  for (const dataset of [{}, { context: 'private' }, { format: 'html' }]) {
+    page.elements.get('contexts').handlers.click({ target: { dataset } });
+    page.elements.get('formats').handlers.click({ target: { dataset } });
+  }
+  assert.equal(page.elements.get('output').value, output);
+  assert.equal(page.location.href, base + '#context=couple&format=markdown');
+  assert.deepEqual(page.historyCalls, []);
+});
+
+test('unavailable browser history does not break controls or the explicit recipient link', async () => {
+  const page = mount('', '#context=couple&format=markdown', { rejectHistory: true });
+  choose(page, 'team', 'text');
+  assert.equal(page.elements.get('title').textContent, contexts.team.title);
+  assert.ok(page.elements.get('output').value.startsWith(contexts.team.title));
+  await page.elements.get('copy-link').handlers.click();
+  assert.equal(page.elements.get('share-url').value, base + '#context=team&format=text');
+  assert.deepEqual(page.historyCalls, []);
+});
+
+test('the repair needs no storage, photos, network requests or extra tracking', () => {
+  assert.doesNotMatch(script, /\b(?:fetch|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|indexedDB)\b|document\.cookie/);
+  assert.doesNotMatch(html, /<(?:form|iframe)\b|type=["']file["']/i);
+});
 
 const readmePresetLinks = Array.from(readme.matchAll(/\]\((https:\/\/m0k13\.github\.io\/togetherlens-photo-prompt-card\/#[^)]+)\)/g), match => new URL(match[1]));
 
