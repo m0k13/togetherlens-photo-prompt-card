@@ -12,7 +12,20 @@ Each link opens the existing card with the audience and copy format selected.
 | Couple | Pick a visual direction together before sharing portraits. | [Plain text](https://m0k13.github.io/togetherlens-photo-prompt-card/#context=couple&format=text) · [Markdown](https://m0k13.github.io/togetherlens-photo-prompt-card/#context=couple&format=markdown) |
 | Small team | Plan a portrait asynchronously instead of arranging a photo call. | [Plain text](https://m0k13.github.io/togetherlens-photo-prompt-card/#context=team&format=text) · [Markdown](https://m0k13.github.io/togetherlens-photo-prompt-card/#context=team&format=markdown) |
 
-Use plain text for a chat or email, or Markdown for a README or team handbook. Click **Copy invitation**, then paste and send it yourself. Nothing is sent automatically. Use **Copy link to this card** if the recipient should reopen the same audience and format. Card links contain preset choices, not names, photos or contact details.
+Use plain text for a chat or email, or Markdown for a README or team handbook.
+
+## Send an invitation with your instruction
+
+1. Choose the audience and copy format from the table above.
+2. Open **Add an organizer note** to add an instruction of up to 240 characters. Keep names and contact details out. For example: "Let's agree on a window-lit scene before choosing portraits."
+3. Review the invitation preview, including the permission and paid-generation notices.
+4. Click **Copy invitation**, then paste the complete invitation into your chat or email. Review the pasted text before you send it yourself. Nothing is sent automatically.
+
+To keep a file instead, click **Download text**. The prepared text or Markdown includes your organizer note. Your browser must complete the download.
+
+To let someone reopen the selected audience and format, click **Copy link to this card**. That link does not include your organizer note. If the recipient needs your instruction, send the complete invitation text instead. Card links contain preset choices, not names, photos or contact details.
+
+Changing the audience or reloading the page clears the note. The tool holds the note in the current tab. You still choose where to paste, save or send the invitation. Do not upload or send anyone's portrait through this tool.
 
 ## Before anyone shares a portrait
 
