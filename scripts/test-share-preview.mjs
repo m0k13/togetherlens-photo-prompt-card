@@ -53,10 +53,11 @@ test('preview remains a permission-aware text invitation, not a generated photo 
   assert.match(svg, /separate app uses paid tokens/);
   assert.doesNotMatch(svg.replace('xmlns="http://www.w3.org/2000/svg"', ''), /<script|<foreignObject|href=|url\(|https?:|<image/i);
 });
-test('all page style, controller, markup, disclosures and outgoing routes stay byte-identical', () => {
-  assert.equal(html.slice(html.indexOf('<style>')), base.slice(base.indexOf('<style>')));
+test('existing title, description, app disclosure and static outgoing routes stay byte-identical', () => {
   assert.equal(html.match(/<title>[\s\S]*?<\/title>/)[0], base.match(/<title>[\s\S]*?<\/title>/)[0]);
   assert.equal(html.match(/<meta name="description"[^>]+>/)[0], base.match(/<meta name="description"[^>]+>/)[0]);
+  assert.equal(html.match(/<section class="app">[\s\S]*?<\/section>/)[0], base.match(/<section class="app">[\s\S]*?<\/section>/)[0]);
+  assert.deepEqual([...html.matchAll(/href="([^"]+)"/g)].map(match=>match[1]), [...base.matchAll(/href="([^"]+)"/g)].map(match=>match[1]));
 });
 for (const key of ['og:title','og:type','og:url','og:image','og:image:alt','twitter:card']) {
   test(`reject missing ${key}`, () => assert.throws(() => validate(html.replace(new RegExp(`<meta (?:property|name)="${key}"[^>]+>\\n`), ''))));

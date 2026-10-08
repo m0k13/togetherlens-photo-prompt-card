@@ -14,8 +14,14 @@ const base = 'https://m0k13.github.io/togetherlens-photo-prompt-card/';
 const redditQuery = '?utm_source=reddit&utm_medium=organic&utm_campaign=webapps_card_20261002';
 const defaultQuery = '?utm_source=github&utm_medium=referral&utm_campaign=prompt_card_demo_20260914';
 
-function mount(query = '', hash = '', { rejectHistory = false } = {}) {
+function mount(query = '', hash = '', { rejectHistory = false, rejectClipboard = false, source = script } = {}) {
   const clipboard = [];
+  const downloads = [];
+  const focusEvents = [];
+  class BrowserURL extends URL {
+    static createObjectURL(blob) { downloads.push(blob); return 'blob:local-test'; }
+    static revokeObjectURL() {}
+  }
   const location = new URL(base + query + hash);
   const historyCalls = [];
   const historyState = { previousPageState: 'preserved' };
@@ -25,12 +31,13 @@ function mount(query = '', hash = '', { rejectHistory = false } = {}) {
       id, dataset, value: '', textContent: '', hidden: false, attributes: {}, handlers: {},
       addEventListener(name, handler) { this.handlers[name] = handler; },
       setAttribute(name, value) { this.attributes[name] = value; },
-      focus() {}, select() {}, click() {},
+      focus() { focusEvents.push(`${id}:focus`); }, select() { focusEvents.push(`${id}:select`); }, click() {},
+      set innerHTML(value) { assert.fail('Organizer input must never become HTML.'); },
     };
     elements.set(id, node);
     return node;
   };
-  for (const id of ['output', 'title', 'body', 'share-result', 'share-url', 'status', 'contexts', 'formats', 'copy', 'copy-link', 'download']) makeNode(id);
+  for (const id of ['output', 'title', 'body', 'share-result', 'share-url', 'status', 'contexts', 'formats', 'copy', 'copy-link', 'download', 'note', 'note-preview', 'note-count', 'clear-note']) makeNode(id);
   const scene = makeNode('scene');
   const app = makeNode('app');
   scene.href = `https://togetherlens.app/duel/${defaultQuery}`;
@@ -38,8 +45,8 @@ function mount(query = '', hash = '', { rejectHistory = false } = {}) {
   const contextButtons = ['family', 'couple', 'team'].map(context => makeNode(`context-${context}`, { context }));
   const formatButtons = ['text', 'markdown'].map(format => makeNode(`format-${format}`, { format }));
   const windowHandlers = {};
-  vm.runInNewContext(script, {
-    contexts, URL, URLSearchParams, Blob,
+  vm.runInNewContext(source, {
+    contexts, URL: BrowserURL, URLSearchParams, Blob,
     location,
     history: {
       state: historyState,
@@ -65,10 +72,10 @@ function mount(query = '', hash = '', { rejectHistory = false } = {}) {
       },
       createElement(name) { assert.equal(name, 'a'); return makeNode('download-anchor'); },
     },
-    navigator: { clipboard: { async writeText(value) { clipboard.push(value); } } },
+    navigator: { clipboard: { async writeText(value) { if (rejectClipboard) throw new Error('Clipboard unavailable'); clipboard.push(value); } } },
     setTimeout() {},
   });
-  return { elements, scene, app, contextButtons, formatButtons, clipboard, windowHandlers, location, historyCalls };
+  return { elements, scene, app, contextButtons, formatButtons, clipboard, downloads, focusEvents, windowHandlers, location, historyCalls };
 }
 
 function choose(page, context, format) {
@@ -203,6 +210,166 @@ test('exact Reddit entry reaches both guides and generated text', async () => {
   assert.ok(page.elements.get('output').value.includes('App photo generation uses paid tokens.'));
   await page.elements.get('copy').handlers.click();
   assert.equal(page.clipboard[0], page.elements.get('output').value);
+});
+
+test('an optional organizer note changes copy-ready text without changing links', async () => {
+  const page = mount(redditQuery);
+  const original = page.elements.get('output').value;
+  const scene = page.scene.href;
+  const app = page.app.href;
+  const note = page.elements.get('note');
+  assert.ok(note, 'The actual browser tool needs an optional note field.');
+  note.value = 'Please agree on a window-lit scene before choosing portraits.';
+  note.handlers.input();
+  assert.ok(page.elements.get('output').value.includes(note.value));
+  assert.equal(page.elements.get('note-preview').textContent, note.value);
+  assert.equal(page.elements.get('note-preview').hidden, false);
+  assert.equal(page.scene.href, scene);
+  assert.equal(page.app.href, app);
+  assert.equal(page.location.href, base + redditQuery);
+  await page.elements.get('copy').handlers.click();
+  assert.equal(page.clipboard.at(-1), page.elements.get('output').value);
+  page.elements.get('clear-note').handlers.click();
+  assert.equal(page.elements.get('output').value, original);
+});
+
+function enterNote(page, value) {
+  page.elements.get('note').value = value;
+  page.elements.get('note').handlers.input();
+}
+
+test('the optional editor is labelled, bounded and separate from fixed output', () => {
+  assert.match(html, /<details class="optional-note"><summary>Add an organizer note<\/summary>/);
+  assert.match(html, /<label for="note">Add a note, optional<\/label>/);
+  assert.match(html, /<textarea id="note" maxlength="240" rows="3" autocomplete="off" aria-describedby="note-help note-count"/);
+  assert.match(html, /<textarea id="output" readonly/);
+  assert.match(html, /Card links do not include it\. Changing the audience clears it\./);
+  assert.match(html, /#note-preview\{[^}]*overflow-wrap:anywhere/);
+});
+
+for (const context of ['family', 'couple', 'team']) {
+  for (const format of ['text', 'markdown']) {
+    test(`empty-note ${context}/${format} output is exactly the original card`, () => {
+      const page = mount('', `#context=${context}&format=${format}`);
+      const c = contexts[context];
+      const link = page.scene.href;
+      const appGuide = page.app.href;
+      const note = 'Scene planning is free. App photo generation uses paid tokens. Use portraits only with permission.';
+      const expected = format === 'markdown'
+        ? `> **${c.title}**\n>\n> ${c.body}\n>\n> [${c.cta}](${link})\n>\n> [How to make the photo and get the app](${appGuide})\n>\n> ${note}`
+        : `${c.title}\n\n${c.body}\n\n${c.cta}: ${link}\n\nHow to make the photo and get the app: ${appGuide}\n\n${note}`;
+      assert.equal(page.elements.get('output').value, expected);
+      assert.equal(page.elements.get('note-preview').hidden, true);
+      assert.equal(page.elements.get('clear-note').disabled, true);
+    });
+  }
+}
+
+test('format changes keep the note, audience changes clear it, same audience does not', () => {
+  const page = mount();
+  enterNote(page, 'Choose a winter scene.');
+  page.elements.get('formats').handlers.click({target:{dataset:{format:'markdown'}}});
+  assert.equal(page.elements.get('note').value, 'Choose a winter scene.');
+  assert.ok(page.elements.get('output').value.includes('> Choose a winter scene\\.'));
+  page.elements.get('contexts').handlers.click({target:{dataset:{context:'family'}}});
+  assert.equal(page.elements.get('note').value, 'Choose a winter scene.');
+  page.elements.get('contexts').handlers.click({target:{dataset:{context:'team'}}});
+  assert.equal(page.elements.get('note').value, '');
+  assert.doesNotMatch(page.elements.get('output').value, /winter scene/);
+  assert.equal(page.elements.get('note-preview').hidden, true);
+});
+
+test('card links, guide links, address synchronization and reload never include note text', async () => {
+  for (const query of ['', redditQuery, '?utm_source=youtube&utm_medium=organic&utm_campaign=starter_playlist_demo_20260914']) {
+    const page = mount(query, '#context=couple&format=text');
+    const originalScene = page.scene.href;
+    const originalApp = page.app.href;
+    enterNote(page, 'synthetic-only-private-canary@example.invalid');
+    page.elements.get('formats').handlers.click({target:{dataset:{format:'markdown'}}});
+    await page.elements.get('copy-link').handlers.click();
+    const recipient = new URL(page.elements.get('share-url').value);
+    assert.equal(recipient.hash, '#context=couple&format=markdown');
+    assert.doesNotMatch(recipient.href, /private-canary|example\.invalid|note=/);
+    assert.doesNotMatch(page.location.href, /private-canary|example\.invalid|note=/);
+    assert.equal(page.scene.href, originalScene);
+    assert.equal(page.app.href, originalApp);
+    assert.match(page.elements.get('status').textContent, /without your optional note/);
+    const reloaded = mount(recipient.search, recipient.hash);
+    assert.equal(reloaded.elements.get('note').value, '');
+    assert.doesNotMatch(reloaded.elements.get('output').value, /private-canary/);
+    assert.deepEqual(Object.keys(reloaded.elements.get('note').handlers), ['input']);
+  }
+});
+
+test('external card fragment changes clear local notes; free text in a URL is ignored', () => {
+  const page = mount('', '#context=couple&format=text&note=do-not-import');
+  assert.equal(page.elements.get('note').value, '');
+  enterNote(page, 'Only in this tab.');
+  page.location.hash = '#context=team&format=text&note=do-not-import';
+  page.windowHandlers.hashchange();
+  assert.equal(page.elements.get('note').value, '');
+  assert.doesNotMatch(page.elements.get('output').value, /Only in this tab|do-not-import/);
+});
+
+test('notes are bounded, control-cleaned, literal text; fixed notices cannot be removed', () => {
+  const page = mount();
+  enterNote(page, 'x'.repeat(239) + '\uD83D\uDE00' + 'y'.repeat(50));
+  assert.equal(page.elements.get('note').value.length, 239);
+  assert.equal(page.elements.get('note-preview').textContent.length, 239);
+  assert.equal(page.elements.get('note-count').textContent, '239 / 240 characters');
+  enterNote(page, '  <img src=x onerror=alert(1)>\n\u0000\t[link](javascript:alert(1)) **bold**  ');
+  const literal = '<img src=x onerror=alert(1)> [link](javascript:alert(1)) **bold**';
+  assert.equal(page.elements.get('note-preview').textContent, literal);
+  assert.ok(page.elements.get('output').value.includes(literal));
+  page.elements.get('formats').handlers.click({target:{dataset:{format:'markdown'}}});
+  const output = page.elements.get('output').value;
+  assert.ok(output.includes('> \\<img src=x onerror=alert\\(1\\)\\> \\[link\\]\\(javascript:alert\\(1\\)\\) \\*\\*bold\\*\\*'));
+  assert.ok(output.endsWith('Scene planning is free. App photo generation uses paid tokens. Use portraits only with permission.'));
+});
+
+test('clipboard fallback selects the complete note-bearing invitation, preset fallback excludes it', async () => {
+  const page = mount('', '', {rejectClipboard:true});
+  enterNote(page, 'A manually shared planning instruction.');
+  await page.elements.get('copy').handlers.click();
+  assert.deepEqual(page.focusEvents, ['output:focus','output:select']);
+  assert.ok(page.elements.get('output').value.includes('A manually shared planning instruction.'));
+  await page.elements.get('copy-link').handlers.click();
+  assert.deepEqual(page.focusEvents.slice(-2), ['share-url:focus','share-url:select']);
+  assert.doesNotMatch(page.elements.get('share-url').value, /planning instruction/);
+  assert.match(page.elements.get('status').textContent, /does not include your optional note/);
+  assert.equal(page.clipboard.length, 0);
+});
+
+test('existing download prepares exact note-bearing text or Markdown, with generic filenames', async () => {
+  for (const format of ['text','markdown']) {
+    const page = mount('', `#context=family&format=${format}`);
+    enterNote(page, 'Agree on the scene first.');
+    page.elements.get('download').handlers.click();
+    assert.equal(page.downloads.length, 1);
+    assert.equal(await page.downloads[0].text(), page.elements.get('output').value);
+    assert.equal(page.elements.get('download-anchor').download, `togetherlens-family-invitation.${format==='markdown'?'md':'txt'}`);
+    assert.match(page.elements.get('status').textContent, /download requested/);
+  }
+});
+
+test('negative controls reject leaking the note, rendering HTML, losing fixed notices or stale audience text', async () => {
+  for (const [name, mutated] of [
+    ['URL note',script.replace('shared.hash=new URLSearchParams({context,format}).toString();','shared.hash=new URLSearchParams({context,format,note:organizerNote()}).toString();')],
+    ['HTML sink',script.replace("$('note-preview').textContent=extra", "$('note-preview').innerHTML=extra")],
+    ['missing notices',script.replace('App photo generation uses paid tokens. Use portraits only with permission.', '')],
+    ['stale audience note',script.replace("if(context!==e.target.dataset.context)$('note').value='';", '')],
+  ]) {
+    assert.notEqual(mutated, script, `${name} must really change the implementation`);
+    await assert.rejects(async()=>{
+      const page = mount('', '', {source:mutated});
+      enterNote(page, 'synthetic-canary');
+      await page.elements.get('copy-link').handlers.click();
+      assert.doesNotMatch(page.elements.get('share-url').value, /synthetic-canary|note=/);
+      assert.ok(page.elements.get('output').value.endsWith('App photo generation uses paid tokens. Use portraits only with permission.'));
+      page.elements.get('contexts').handlers.click({target:{dataset:{context:'team'}}});
+      assert.equal(page.elements.get('note').value, '');
+    }, undefined, name);
+  }
 });
 
 test('changed choices and recipient links preserve only the validated tuple', async () => {
