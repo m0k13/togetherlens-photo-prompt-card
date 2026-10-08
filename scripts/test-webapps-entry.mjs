@@ -238,6 +238,61 @@ function enterNote(page, value) {
   page.elements.get('note').handlers.input();
 }
 
+function requireReadmeNoteGuide(content) {
+  const guide = content.match(/## Send an invitation with your instruction\n([\s\S]*?)\n## Before anyone shares a portrait/)?.[1];
+  assert.ok(guide, 'Keep the note-bearing invitation task before the photo permission checklist.');
+  for (const label of ['Add an organizer note', 'Copy invitation', 'Download text', 'Copy link to this card']) {
+    assert.ok(guide.includes(`**${label}**`), `Document the actual ${label} control.`);
+    assert.ok(html.includes(`>${label}<`), `The documented ${label} control must exist.`);
+  }
+  assert.match(guide, /up to 240 characters/);
+  assert.match(guide, /Keep names and contact details out\./);
+  assert.match(guide, /Nothing is sent automatically\./);
+  assert.match(guide, /Your browser must complete the download\./);
+  assert.match(guide, /That link does not include your organizer note\./);
+  assert.match(guide, /Changing the audience or reloading the page clears the note\./);
+  assert.match(guide, /Do not upload or send anyone's portrait through this tool\./);
+  return guide;
+}
+
+test('README distinguishes complete invitations from private-note-free preset links', () => {
+  requireReadmeNoteGuide(readme);
+  for (const [before, after] of [
+    ['up to 240 characters', 'up to 500 characters'],
+    ['Keep names and contact details out.', 'Include names and contact details.'],
+    ['Nothing is sent automatically.', 'The invitation is sent automatically.'],
+    ['Your browser must complete the download.', 'The file is already saved.'],
+    ['That link does not include your organizer note.', 'That link includes your organizer note.'],
+    ['Changing the audience or reloading the page clears the note.', 'The note survives a reload.'],
+    ["Do not upload or send anyone's portrait through this tool.", 'Upload the portraits here.'],
+  ]) assert.throws(() => requireReadmeNoteGuide(readme.replace(before, after)));
+});
+
+for (const context of ['family', 'couple', 'team']) {
+  for (const format of ['text', 'markdown']) {
+    test(`README note task matches the actual ${context}/${format} recipient path`, async () => {
+      requireReadmeNoteGuide(readme);
+      const page = mount('', `#context=${context}&format=${format}`);
+      const note = "Let's agree on a window-lit scene before choosing portraits.";
+      enterNote(page, note);
+      assert.equal(page.elements.get('note-preview').textContent, note);
+      await page.elements.get('copy').handlers.click();
+      const copied = page.clipboard.at(-1);
+      assert.ok(copied.includes(format === 'markdown' ? "Let's agree on a window\\-lit scene before choosing portraits\\." : note));
+      assert.ok(copied.includes('App photo generation uses paid tokens. Use portraits only with permission.'));
+      await page.elements.get('copy-link').handlers.click();
+      const recipient = new URL(page.elements.get('share-url').value);
+      assert.equal(recipient.hash, `#context=${context}&format=${format}`);
+      assert.doesNotMatch(recipient.href, /note=|window-lit|portraits\./);
+      const reopened = mount(recipient.search, recipient.hash);
+      assert.equal(reopened.elements.get('note').value, '');
+      assert.doesNotMatch(reopened.elements.get('output').value, /window-lit/);
+      page.elements.get('contexts').handlers.click({target:{dataset:{context:context === 'family' ? 'team' : 'family'}}});
+      assert.equal(page.elements.get('note').value, '');
+    });
+  }
+}
+
 test('the optional editor is labelled, bounded and separate from fixed output', () => {
   assert.match(html, /<details class="optional-note"><summary>Add an organizer note<\/summary>/);
   assert.match(html, /<label for="note">Add a note, optional<\/label>/);
