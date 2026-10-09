@@ -22,6 +22,24 @@
 <style>
 :root{color-scheme:light;--ink:#172b47;--blue:#285cbd;--paper:#fff;--sky:#e9f1ff;--muted:#51617a;--edge:#c8d7ee}*{box-sizing:border-box}body{margin:0;background:var(--sky);color:var(--ink);font:17px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1060px;margin:auto;padding:40px 24px}a{color:var(--blue)}header{display:flex;justify-content:space-between;gap:20px;font-size:14px;margin-bottom:48px}h1{font:600 clamp(36px,6vw,64px)/1.06 Georgia,serif;max-width:680px;letter-spacing:-1.8px;margin:12px 0 20px}h2{font:600 30px/1.2 Georgia,serif;margin:0 0 20px}.intro{max-width:640px;color:var(--muted)}.workspace{display:grid;grid-template-columns:1fr 1.3fr;gap:32px;margin-top:36px;align-items:start}fieldset{border:0;padding:0;margin:0 0 24px}legend,label{display:block;font-weight:600;margin-bottom:10px}.choices{display:flex;gap:8px;flex-wrap:wrap}button{font:inherit;cursor:pointer;border:1px solid var(--edge);border-radius:9px;padding:10px 16px;background:white;color:var(--ink)}button[aria-pressed=true]{background:var(--ink);color:white;border-color:var(--ink)}textarea{display:block;width:100%;min-height:240px;resize:vertical;padding:14px;border:1px solid var(--edge);border-radius:9px;font:14px/1.6 ui-monospace,monospace;background:#fff;color:var(--ink)}.card{background:var(--paper);padding:36px;border-radius:3px 28px 28px 3px;border-left:8px solid var(--blue);box-shadow:0 16px 50px #244b8212}.card .stamp{font:12px/1.4 ui-monospace,monospace;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:32px}.card p{margin-bottom:24px}.card small,.note{color:var(--muted);font-size:14px}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.primary{background:var(--blue);color:white;border-color:var(--blue)}#status{min-height:26px;font-size:14px}.app{border-top:1px solid var(--edge);margin-top:40px;padding-top:24px;max-width:720px}.app a{font-weight:650}footer{margin-top:44px;font-size:13px;color:var(--muted)}:focus-visible{outline:3px solid #cf7a24;outline-offset:4px}@media(max-width:680px){main{padding:24px 18px}header{margin-bottom:30px}.workspace{display:flex;flex-direction:column;gap:24px}.card{order:-1;width:100%;padding:26px}.editor{width:100%}h1{letter-spacing:-1px}}
 .optional-note{margin:0 0 24px}.optional-note summary{cursor:pointer;font-weight:600;padding:8px 0}.optional-note label{margin-top:12px}.optional-note textarea{min-height:96px;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.optional-note .note{margin:8px 0}.note-tools{display:flex;justify-content:space-between;align-items:center;gap:12px}.note-tools span{font:13px/1.4 ui-monospace,monospace;color:var(--muted)}button:disabled{cursor:default;opacity:.55}#note-preview{white-space:pre-wrap;overflow-wrap:anywhere;border-left:2px solid var(--edge);padding-left:16px}#note-preview[hidden]{display:none}
+.print-details,.print-url{display:none}
+@page{margin:15mm}
+@media print{
+body{background:#fff;color:#172b47;font-size:11pt;line-height:1.45}
+main{max-width:none;margin:0;padding:0}
+header,main>h1,.intro,.editor,.app,footer,noscript{display:none}
+.workspace{display:block;margin:0}
+.card{width:100%;padding:8mm;border-radius:0;border-left:3pt solid #285cbd;box-shadow:none;break-inside:avoid-page;page-break-inside:avoid}
+.card .stamp{font-size:9pt;letter-spacing:1px;margin-bottom:6mm}
+.card h2{font-size:26pt;line-height:1.15;letter-spacing:0;margin-bottom:6mm}
+.card p{margin:0 0 5mm}
+.card>small{display:none}
+.print-details{display:block;border-top:1px solid #c8d7ee;padding-top:5mm;font-size:10pt}
+.print-url{display:block;font:9pt/1.4 ui-monospace,monospace;overflow-wrap:anywhere;margin-top:2mm;color:#172b47}
+.print-cost{font-size:9pt}
+a{color:#172b47;text-decoration:underline}
+#note-preview{padding-left:4mm;border-color:#c8d7ee}
+}
 </style>
 </head>
 <body><main>
@@ -34,16 +52,23 @@
 <fieldset><legend>Copy format</legend><div class="choices" id="formats"><button type="button" data-format="text" aria-pressed="true">Plain text</button><button type="button" data-format="markdown" aria-pressed="false">Markdown</button></div></fieldset>
 <details class="optional-note"><summary>Add an organizer note</summary><label for="note">Add a note, optional</label><textarea id="note" maxlength="240" rows="3" autocomplete="off" aria-describedby="note-help note-count" placeholder="For example, let's agree on the scene before choosing portraits."></textarea><p class="note" id="note-help">Keep names and contact details out. This note stays in this tab and is included when you copy or download the invitation. Card links do not include it. Changing the audience clears it.</p><div class="note-tools"><span id="note-count">0 / 240 characters</span><button id="clear-note" type="button" disabled>Clear note</button></div></details>
 <label for="output">Your invitation</label><textarea id="output" readonly spellcheck="false"></textarea>
-<div class="actions"><button class="primary" id="copy" type="button">Copy invitation</button><button id="download" type="button">Download text</button><button id="copy-link" type="button">Copy link to this card</button></div>
+<div class="actions"><button class="primary" id="copy" type="button">Copy invitation</button><button id="download" type="button">Download text</button><button id="copy-link" type="button">Copy link to this card</button><button id="print" type="button" aria-describedby="print-help">Print invitation</button></div>
+<p class="note" id="print-help">Print the card or choose Save as PDF in your browser. Your optional note is included on the paper or PDF, not in its links. Review it before sharing it yourself.</p>
 <div id="share-result" hidden><label for="share-url">Link to this card</label><input id="share-url" readonly style="width:100%;padding:12px;font:inherit;border:1px solid var(--edge);border-radius:9px"></div>
 <p id="status" role="status" aria-live="polite"></p>
 <p class="note">Share a link to reopen this card with the same audience and format. No photos, names or email addresses needed. Nothing is sent automatically.</p>
 </section>
-<article class="card" aria-label="Invitation preview"><div class="stamp">An invitation to make something together</div><h2 id="title">A photo everyone can join</h2><p id="body">Choose one shared scene first. Then invite the people whose portraits belong in it, even when everyone is in a different place.</p><p id="note-preview" hidden></p><p><a id="scene" href="https://togetherlens.app/duel/?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=prompt_card_demo_20260914">Choose a scene together</a></p><small>Scene planning is free. App photo generation uses paid tokens.</small></article>
+<article class="card" aria-label="Invitation preview"><div class="stamp">An invitation to make something together</div><h2 id="title">A photo everyone can join</h2><p id="body">Choose one shared scene first. Then invite the people whose portraits belong in it, even when everyone is in a different place.</p><p id="note-preview" hidden></p><p><a id="scene" href="https://togetherlens.app/duel/?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=prompt_card_demo_20260914">Choose a scene together</a><span id="print-scene-url" class="print-url">https://togetherlens.app/duel/?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=prompt_card_demo_20260914</span></p><small>Scene planning is free. App photo generation uses paid tokens.</small>
+<aside class="print-details" aria-label="Before anyone shares a portrait">
+<p>Taking part is optional. Ask each person which portrait they permit you to use. For a child's photo, ask their parent or guardian first.</p>
+<p>TogetherLens creates a new AI composition from separate photos of two to five people, not a record of an event everyone attended. Review the result together before sharing it as AI-generated.</p>
+<p><a id="print-app" href="https://togetherlens.app/create/combine-separate-photos/?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=prompt_card_demo_20260914">See the photo workflow and get the app</a><span id="print-app-url" class="print-url">https://togetherlens.app/create/combine-separate-photos/?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=prompt_card_demo_20260914</span></p>
+<p class="print-cost">Scene planning is free. App photo generation uses paid tokens. Premium is optional and auto-renews. Check current prices and terms in the app before buying. This invitation does not generate a photo, send portraits or import a prompt into the app.</p>
+</aside></article>
 </div>
 <section class="app"><h2>Ready to make the photo?</h2><p>TogetherLens creates an AI portrait from separate photos of two to five people. Use portraits with permission and review the result before sharing it as AI-generated.</p><p><a href="https://togetherlens.app/create/combine-separate-photos/?utm_source=github&amp;utm_medium=referral&amp;utm_campaign=prompt_card_demo_20260914">See how it works and get the app →</a></p><p class="note">The app is free to install. Photo generation uses paid tokens. Check purchase options and prices in the app. This card plans a scene; it does not generate a photo or import a prompt into the app.</p></section>
 <footer>Free, MIT-licensed demo. <a href="https://togetherlens.app/privacy/">TogetherLens privacy</a> · Hosted by GitHub Pages.</footer>
-<noscript><p>Enable JavaScript to switch and copy cards. The scene and app links above work without it.</p></noscript>
+<noscript><p>Enable JavaScript to switch and copy cards. The scene and app links above work without it. Use your browser's Print command to print the default family invitation.</p></noscript>
 </main>
 <script type="module">
 import {contexts} from './index.js';
@@ -64,6 +89,7 @@ const knownCampaign=fromPlaylist || fromWebApps;
 if(knownCampaign){for(const anchor of [$('scene'),document.querySelector('.app a')]){const url=new URL(anchor.href);url.searchParams.set('utm_source',inbound.get('utm_source'));url.searchParams.set('utm_medium','organic');url.searchParams.set('utm_campaign',inbound.get('utm_campaign'));anchor.href=url.toString();}}
 const link=$('scene').href;
 const appGuide=document.querySelector('.app a').href;
+$('print-scene-url').textContent=link;$('print-app').href=appGuide;$('print-app-url').textContent=appGuide;
 function organizerNote(){return $('note').value.replace(/[\u0000-\u001f\u007f-\u009f]/g,' ').replace(/\s+/g,' ').trim().slice(0,240).replace(/[\uD800-\uDBFF]$/,'');}
 function markdownNote(value){return value.replace(/[\\`*_{}\[\]()#+\-.!<>|]/g,'\\$&');}
 function render(){$('share-result').hidden=true;const c=contexts[context];$('title').textContent=c.title;$('body').textContent=c.body;$('scene').textContent=c.cta;
@@ -88,6 +114,10 @@ if(knownCampaign) shared.search=inbound.toString();
 shared.hash=new URLSearchParams({context,format}).toString();
 $('share-result').hidden=false;$('share-url').value=shared.href;
 try{await navigator.clipboard.writeText(shared.href);$('status').textContent='Card link copied. Your recipient will see the same audience and format, without your optional note.';}catch{$('share-url').focus();$('share-url').select();$('status').textContent='Select and copy the card link above. It does not include your optional note.';}
+});
+$('print').addEventListener('click',()=>{
+try{window.print();$('status').textContent='Print dialog requested. Choose your printer or Save as PDF, then review the invitation before sharing.';}
+catch{$('status').textContent='Printing is unavailable here. Use your browser Print command, or copy or download the invitation.';}
 });
 $('download').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([$('output').value],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`togetherlens-${context}-invitation.${format==='markdown'?'md':'txt'}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('status').textContent='Invitation download requested.';});render();
 </script></body></html>

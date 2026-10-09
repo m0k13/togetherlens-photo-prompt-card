@@ -14,10 +14,11 @@ const base = 'https://m0k13.github.io/togetherlens-photo-prompt-card/';
 const redditQuery = '?utm_source=reddit&utm_medium=organic&utm_campaign=webapps_card_20261002';
 const defaultQuery = '?utm_source=github&utm_medium=referral&utm_campaign=prompt_card_demo_20260914';
 
-function mount(query = '', hash = '', { rejectHistory = false, rejectClipboard = false, source = script } = {}) {
+function mount(query = '', hash = '', { rejectHistory = false, rejectClipboard = false, rejectPrint = false, source = script } = {}) {
   const clipboard = [];
   const downloads = [];
   const focusEvents = [];
+  const printCalls = [];
   class BrowserURL extends URL {
     static createObjectURL(blob) { downloads.push(blob); return 'blob:local-test'; }
     static revokeObjectURL() {}
@@ -37,7 +38,7 @@ function mount(query = '', hash = '', { rejectHistory = false, rejectClipboard =
     elements.set(id, node);
     return node;
   };
-  for (const id of ['output', 'title', 'body', 'share-result', 'share-url', 'status', 'contexts', 'formats', 'copy', 'copy-link', 'download', 'note', 'note-preview', 'note-count', 'clear-note']) makeNode(id);
+  for (const id of ['output', 'title', 'body', 'share-result', 'share-url', 'status', 'contexts', 'formats', 'copy', 'copy-link', 'download', 'note', 'note-preview', 'note-count', 'clear-note', 'print', 'print-scene-url', 'print-app', 'print-app-url']) makeNode(id);
   const scene = makeNode('scene');
   const app = makeNode('app');
   scene.href = `https://togetherlens.app/duel/${defaultQuery}`;
@@ -61,7 +62,13 @@ function mount(query = '', hash = '', { rejectHistory = false, rejectClipboard =
       },
       pushState() { assert.fail('Choices must not add Back entries.'); },
     },
-    window: { addEventListener(name, handler) { windowHandlers[name] = handler; } },
+    window: {
+      addEventListener(name, handler) { windowHandlers[name] = handler; },
+      print() {
+        if (rejectPrint) throw new Error('Printing unavailable');
+        printCalls.push({ title: elements.get('title').textContent, body: elements.get('body').textContent, note: elements.get('note-preview').textContent, noteHidden: elements.get('note-preview').hidden, scene: elements.get('print-scene-url').textContent, app: elements.get('print-app-url').textContent });
+      },
+    },
     document: {
       getElementById(id) { assert.ok(elements.has(id), `Unknown element ${id}`); return elements.get(id); },
       querySelector(selector) { assert.equal(selector, '.app a'); return app; },
@@ -75,7 +82,7 @@ function mount(query = '', hash = '', { rejectHistory = false, rejectClipboard =
     navigator: { clipboard: { async writeText(value) { if (rejectClipboard) throw new Error('Clipboard unavailable'); clipboard.push(value); } } },
     setTimeout() {},
   });
-  return { elements, scene, app, contextButtons, formatButtons, clipboard, downloads, focusEvents, windowHandlers, location, historyCalls };
+  return { elements, scene, app, contextButtons, formatButtons, clipboard, downloads, focusEvents, windowHandlers, location, historyCalls, printCalls };
 }
 
 function choose(page, context, format) {
@@ -404,6 +411,104 @@ test('existing download prepares exact note-bearing text or Markdown, with gener
     assert.equal(await page.downloads[0].text(), page.elements.get('output').value);
     assert.equal(page.elements.get('download-anchor').download, `togetherlens-family-invitation.${format==='markdown'?'md':'txt'}`);
     assert.match(page.elements.get('status').textContent, /download requested/);
+  }
+});
+
+for (const context of ['family', 'couple', 'team']) {
+  for (const format of ['text', 'markdown']) {
+    test(`printing requests only the current ${context}/${format} card with literal local note`, async () => {
+      const page = mount(redditQuery, `#context=${context}&format=${format}`);
+      assert.equal(page.printCalls.length, 0, 'Never print during load or rendering.');
+      const note = '<synthetic-note> agree on the scene, not portraits yet.';
+      enterNote(page, note);
+      const before = { url: page.location.href, scene: page.scene.href, app: page.app.href, output: page.elements.get('output').value };
+      page.elements.get('print').handlers.click();
+      assert.deepEqual(page.printCalls, [{ title: contexts[context].title, body: contexts[context].body, note, noteHidden: false, scene: before.scene, app: before.app }]);
+      assert.equal(page.elements.get('print-app').href, before.app);
+      assert.equal(page.location.href, before.url);
+      assert.equal(page.elements.get('output').value, before.output);
+      assert.equal(page.clipboard.length, 0);
+      assert.equal(page.downloads.length, 0);
+      assert.match(page.elements.get('status').textContent, /^Print dialog requested\./);
+      assert.doesNotMatch(page.printCalls[0].scene + page.printCalls[0].app, /synthetic-note|note=/);
+      await page.elements.get('copy-link').handlers.click();
+      assert.doesNotMatch(page.elements.get('share-url').value, /synthetic-note|note=/);
+      page.elements.get('clear-note').handlers.click();
+      page.elements.get('print').handlers.click();
+      assert.equal(page.printCalls.at(-1).note, '');
+      assert.equal(page.printCalls.at(-1).noteHidden, true);
+    });
+  }
+}
+
+test('printing follows the latest audience and an external fragment clears a previous note', () => {
+  const page = mount();
+  enterNote(page, 'Old family instruction.');
+  choose(page, 'team', 'markdown');
+  page.elements.get('print').handlers.click();
+  assert.equal(page.printCalls.at(-1).title, contexts.team.title);
+  assert.equal(page.printCalls.at(-1).note, '');
+  enterNote(page, 'Old team instruction.');
+  page.location.hash = '#context=couple&format=text';
+  page.windowHandlers.hashchange();
+  page.elements.get('print').handlers.click();
+  assert.equal(page.printCalls.at(-1).title, contexts.couple.title);
+  assert.equal(page.printCalls.at(-1).note, '');
+});
+
+test('a rejected print request offers recovery without claiming a saved file or printing success', () => {
+  const page = mount('', '', {rejectPrint: true});
+  enterNote(page, 'Keep the instruction.');
+  page.elements.get('print').handlers.click();
+  assert.equal(page.printCalls.length, 0);
+  assert.match(page.elements.get('status').textContent, /Printing is unavailable here/);
+  assert.match(page.elements.get('status').textContent, /copy or download/);
+  assert.equal(page.elements.get('note-preview').textContent, 'Keep the instruction.');
+  assert.equal(page.downloads.length, 0);
+});
+
+test('print destinations use exactly the existing validated handoffs, never extra query data', () => {
+  for (const query of ['', redditQuery, '?utm_source=youtube&utm_medium=organic&utm_campaign=starter_playlist_demo_20260914', redditQuery + '&private=canary']) {
+    const page = mount(query);
+    assert.equal(page.elements.get('print-scene-url').textContent, page.scene.href);
+    assert.equal(page.elements.get('print-app').href, page.app.href);
+    assert.equal(page.elements.get('print-app-url').textContent, page.app.href);
+    assert.doesNotMatch(page.elements.get('print-app-url').textContent, /private=|canary/);
+  }
+});
+
+function requirePrintContract(source) {
+  assert.match(source, /<button id="print" type="button" aria-describedby="print-help">Print invitation<\/button>/);
+  assert.match(source, /optional note is included on the paper or PDF, not in its links/);
+  assert.match(source, /\.print-details,\.print-url\{display:none\}/);
+  const css = source.match(/@media print\{([\s\S]*?)\n\}/)?.[1];
+  assert.ok(css);
+  assert.match(css, /header,main>h1,\.intro,\.editor,\.app,footer,noscript\{display:none\}/);
+  assert.match(css, /\.workspace\{display:block;margin:0\}/);
+  assert.match(css, /\.card\{[^}]*width:100%[^}]*box-shadow:none[^}]*break-inside:avoid-page/);
+  assert.match(css, /\.print-details\{display:block/);
+  assert.match(css, /\.print-url\{display:block[^}]*overflow-wrap:anywhere/);
+  const details = source.match(/<aside class="print-details"[\s\S]*?<\/aside>/)?.[0];
+  assert.ok(details);
+  for (const text of ['Taking part is optional.', 'parent or guardian first.', 'two to five people', 'not a record of an event everyone attended', 'before sharing it as AI-generated.', 'photo generation uses paid tokens.', 'Premium is optional and auto-renews.', 'does not generate a photo, send portraits or import a prompt']) assert.ok(details.includes(text), `Missing print boundary: ${text}`);
+  assert.match(source, /#note-preview\{[^}]*overflow-wrap:anywhere/);
+}
+
+test('the print view is one card with readable URLs, fixed boundaries and no settings', () => {
+  requirePrintContract(html);
+  assert.match(readme, /\*\*Print invitation\*\*/);
+  assert.match(readme, /you must complete printing or saving/);
+  assert.match(readme, /Its links do not contain your organizer note/);
+  for (const [before, after] of [
+    ['.print-details{display:block', '.print-details{display:none'],
+    ['.intro,.editor,.app,footer,noscript{display:none}', '.intro,.app,footer,noscript{display:none}'],
+    ['Premium is optional and auto-renews.', 'Premium is required.'],
+    ['photo generation uses paid tokens. Premium is optional', 'photo generation is free. Premium is optional'],
+    ['parent or guardian first.', 'anyone first.'],
+  ]) {
+    const mutated = html.replace(before, after);
+    assert.notEqual(mutated, html);
+    assert.throws(() => requirePrintContract(mutated));
   }
 });
 
