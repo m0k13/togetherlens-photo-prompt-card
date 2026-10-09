@@ -23,6 +23,8 @@ Use plain text for a chat or email, or Markdown for a README or team handbook.
 
 To keep a file instead, click **Download text**. The prepared text or Markdown includes your organizer note. Your browser must complete the download.
 
+For a paper invitation, click **Print invitation**. The print view contains the selected card, your optional note, readable scene and app-guide URLs, and permission, AI and paid-generation notices. Choose a printer or Save as PDF in the browser dialog. The tool only requests the dialog; you must complete printing or saving. Review the paper or PDF before sharing it yourself. Its links do not contain your organizer note. Your browser's Print command also uses this layout; without JavaScript it prints the default family card.
+
 To let someone reopen the selected audience and format, click **Copy link to this card**. That link does not include your organizer note. If the recipient needs your instruction, send the complete invitation text instead. Card links contain preset choices, not names, photos or contact details.
 
 Changing the audience or reloading the page clears the note. The tool holds the note in the current tab. You still choose where to paste, save or send the invitation. Do not upload or send anyone's portrait through this tool.
