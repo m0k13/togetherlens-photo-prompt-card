@@ -29,6 +29,14 @@ To let someone reopen the selected audience and format, click **Copy link to thi
 
 Changing the audience or reloading the page clears the note. The tool holds the note in the current tab. You still choose where to paste, save or send the invitation. Do not upload or send anyone's portrait through this tool.
 
+## Keep an editor for use offline
+
+[Download the offline invitation editor](https://github.com/m0k13/togetherlens-photo-prompt-card/releases/tag/offline-invitation-2026-10-09), then [open and use the local card](docs/offline-invitation-start.md). The ZIP contains one self-contained HTML editor, setup instructions and the MIT license. No installation, account or local server is needed.
+
+The local card supports all three audiences, both copy formats, your optional note, text download and the print layout without a network connection. If the browser does not allow clipboard access, select and copy the prepared text yourself. Scene planning and app-guide links need internet access. The editor does not generate images or transfer a prompt or photos into the app.
+
+Recipient links open the public card with the selected audience and format. They never contain your local file path, optional note or campaign query. The distributable editor's scene and app-guide links are untagged. Notes stay in the current tab; reloading the local file clears them. Review the complete invitation before sharing it yourself.
+
 ## Before anyone shares a portrait
 
 1. Agree on the scene and explain that the intended result is AI-generated, not a record of an event everyone attended.
@@ -101,5 +109,7 @@ The browser demo accepts one Reddit entry with exactly `utm_source=reddit`, `utm
 Run the browser-script, README preset, and static HTML block contract tests with `node --test scripts/test-webapps-entry.mjs scripts/test-invitation-block.mjs`.
 
 Run the publisher-kit archive checks with `node --test scripts/test-publisher-kit.mjs`. To build the kit from a tracked-clean checkout on a system with `zip`, run `node scripts/build-publisher-kit.mjs --output-dir /absolute/path/to/an/output-directory`. The builder uses five reviewed files, writes their timestamps consistently, and refuses to overwrite an existing kit. It creates the ZIP and `SHA256SUMS` outside the checkout.
+
+Run the offline-editor checks with `node --test scripts/test-offline-card.mjs`. Build the three-file ZIP with `node scripts/build-offline-card.mjs --output-dir /absolute/path/to/an/empty/output-directory`. The release builder requires a tracked-clean checkout, rejects symlink inputs and refuses existing outputs. It embeds the existing invitation controller and audience text instead of maintaining a second editor.
 
 TogetherLens is not affiliated with npm. This package is provided as a free, MIT-licensed starter.
